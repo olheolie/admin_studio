@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load lucide %}
+{% block title %}Cadastro de Planos e Pacotes - Admin Studio{% endblock %}
+
+{% block header_title %}💎 Planos e Pacotes{% endblock %}
+{% block header_subtitle %}Gerencie os produtos oferecidos pela sua escola{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="glass p-8 rounded-3xl shadow-xl">
+        <div class="mb-8 p-1 bg-ui-input rounded-2xl flex">
+            <button onclick="switchTab('PLANO')" id="btn-plano" class="flex-1 py-3 rounded-xl text-sm font-bold transition-all {% if tab != 'PACOTE' and tab != 'LISTA' %}bg-ui-bg shadow-sm text-brand-primary{% else %}text-ui-muted hover:bg-ui-bg/50 cursor-pointer{% endif %}">
+                🏷️ Novo Plano
+            </button>
+            <button onclick="switchTab('PACOTE')" id="btn-pacote" class="flex-1 py-3 rounded-xl text-sm font-bold transition-all {% if tab == 'PACOTE' %}bg-ui-bg shadow-sm text-brand-primary{% else %}text-ui-muted hover:bg-ui-bg/50 cursor-pointer{% endif %}">
+                📦 Novo Pacote
+            </button>
+            <button onclick="switchTab('LISTA')" id="btn-lista" class="flex-1 py-3 rounded-xl text-sm font-bold transition-all {% if tab == 'LISTA' %}bg-ui-bg shadow-sm text-brand-primary{% else %}text-ui-muted hover:bg-ui-bg/50 cursor-pointer{% endif %}">
+                ⚙️ Gerenciar
+            </button>
+
+        </div>
+
+        <!-- Form Plano -->
+        <form method="post" id="form-plano" class="space-y-6 {% if tab == 'PACOTE' or tab == 'LISTA' %}hidden{% endif %}">
+
+            {% csrf_token %}
+            <input type="hidden" name="tipo_item" value="PLANO">
+            
+            <div>
+                <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Nome do Plano</label>
+                {{ plano_form.nome }}
+                {% if plano_form.nome.errors %}<p class="text-red-500 text-xs mt-1">{{ plano_form.nome.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Categorias Inclusas</label>
+                <div class="grid grid-cols-2 gap-3 p-4 bg-ui-input rounded-2xl border border-ui-border">
+                    {{ plano_form.categorias }}
+                </div>
+                <p class="text-[10px] text-ui-muted mt-2">Escolha uma ou mais categorias que este plano dá acesso.</p>
+                {% if plano_form.categorias.errors %}<p class="text-red-500 text-xs mt-1">{{ plano_form.categorias.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Duração (Meses)</label>
+                    {{ plano_form.duracao_meses }}
+                    {% if plano_form.duracao_meses.errors %}<p class="text-red-500 text-xs mt-1">{{ plano_form.duracao_meses.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Valor (R$)</label>
+                    {{ plano_form.valor }}
+                    {% if plano_form.valor.errors %}<p class="text-red-500 text-xs mt-1">{{ plano_form.valor.errors.0 }}</p>{% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary-custom">
+                Salvar Plano
+            </button>
+        </form>
+
+        <!-- Form Pacote -->
+        <form method="post" id="form-pacote" class="space-y-6 {% if tab != 'PACOTE' %}hidden{% endif %}">
+            {% csrf_token %}
+            <input type="hidden" name="tipo_item" value="PACOTE">
+
+            <div>
+                <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Nome do Pacote</label>
+                {{ pacote_form.nome }}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Qtd. de Aulas</label>
+                    {{ pacote_form.quantidade_aulas }}
+                </div>
+                <div>
+                    <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Valor (R$)</label>
+                    {{ pacote_form.valor }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary-custom">
+                Salvar Pacote
+            </button>
+        </form>
+
+        <!-- Lista Gerenciar -->
+        <div id="lista-gerenciar" class="{% if tab != 'LISTA' %}hidden{% endif %} space-y-8">
+            <div>
+                <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    {% lucide "gem" size=20 class="text-brand-primary" %} Planos Ativos
+                </h4>
+                <div class="space-y-3">
+                    {% for p in planos %}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-brand-primary/30 transition-all group">
+                        <div>
+                            <p class="font-bold text-gray-800">{{ p.nome }}</p>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{{ p.duracao_meses }} meses • R$ {{ p.valor }}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="{% url 'editar_plano' p.id %}" class="p-2 bg-white text-gray-400 hover:text-brand-primary rounded-lg border border-gray-100 shadow-sm transition-all">
+                                {% lucide "edit-2" size=16 %}
+                            </a>
+                            <form method="post" action="{% url 'excluir_plano' p.id %}" onsubmit="return confirm('Excluir este plano?')">
+                                {% csrf_token %}
+                                <button type="submit" class="p-2 bg-white text-gray-400 hover:text-red-500 rounded-lg border border-gray-100 shadow-sm transition-all cursor-pointer">
+                                    {% lucide "trash-2" size=16 %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-400 text-center py-4">Nenhum plano cadastrado.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    {% lucide "package" size=20 class="text-brand-purple" %} Pacotes de Aulas
+                </h4>
+                <div class="space-y-3">
+                    {% for p in pacotes %}
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-brand-purple/30 transition-all group">
+                        <div>
+                            <p class="font-bold text-gray-800">{{ p.nome }}</p>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{{ p.quantidade_aulas }} aulas • R$ {{ p.valor }}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <a href="{% url 'editar_pacote' p.id %}" class="p-2 bg-white text-gray-400 hover:text-brand-purple rounded-lg border border-gray-100 shadow-sm transition-all">
+                                {% lucide "edit-2" size=16 %}
+                            </a>
+                            <form method="post" action="{% url 'excluir_pacote' p.id %}" onsubmit="return confirm('Excluir este pacote?')">
+                                {% csrf_token %}
+                                <button type="submit" class="p-2 bg-white text-gray-400 hover:text-red-500 rounded-lg border border-gray-100 shadow-sm transition-all cursor-pointer">
+                                    {% lucide "trash-2" size=16 %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-gray-400 text-center py-4">Nenhum pacote cadastrado.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function switchTab(tipo) {
+        const formPlano = document.getElementById('form-plano');
+        const formPacote = document.getElementById('form-pacote');
+        const listaGerenciar = document.getElementById('lista-gerenciar');
+        const btnPlano = document.getElementById('btn-plano');
+        const btnPacote = document.getElementById('btn-pacote');
+        const btnLista = document.getElementById('btn-lista');
+
+        // Hide all
+        formPlano.classList.add('hidden');
+        formPacote.classList.add('hidden');
+        listaGerenciar.classList.add('hidden');
+        btnPlano.className = 'flex-1 py-3 rounded-xl text-sm font-bold transition-all text-ui-muted hover:bg-ui-bg/50 cursor-pointer';
+        btnPacote.className = 'flex-1 py-3 rounded-xl text-sm font-bold transition-all text-ui-muted hover:bg-ui-bg/50 cursor-pointer';
+        btnLista.className = 'flex-1 py-3 rounded-xl text-sm font-bold transition-all text-ui-muted hover:bg-ui-bg/50 cursor-pointer';
+
+        if (tipo === 'PLANO') {
+            formPlano.classList.remove('hidden');
+            btnPlano.className = 'flex-1 py-3 rounded-xl text-sm font-bold transition-all bg-ui-bg shadow-sm text-brand-primary';
+        } else if (tipo === 'PACOTE') {
+            formPacote.classList.remove('hidden');
+            btnPacote.className = 'flex-1 py-3 rounded-xl text-sm font-bold transition-all bg-ui-bg shadow-sm text-brand-primary';
+        } else {
+            listaGerenciar.classList.remove('hidden');
+            btnLista.className = 'flex-1 py-3 rounded-xl text-sm font-bold transition-all bg-ui-bg shadow-sm text-brand-primary';
+        }
+    }
+
+
+    // Individual checkbox styling (relying on base CSS for most, but container needs grid)
+    const catList = document.querySelector('ul#id_categorias');
+    if (catList) {
+        catList.classList.add('grid', 'grid-cols-2', 'gap-3');
+        catList.querySelectorAll('li').forEach(li => {
+            li.classList.add('flex', 'items-center', 'gap-2', 'text-sm', 'font-medium');
+        });
+    }
+</script>
+{% endblock %}
+

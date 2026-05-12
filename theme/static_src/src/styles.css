@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@source "../../../**/*.{html,py,js}";
+
+/* Design System - Image 1 Palette */
+:root {
+  --background: #fdfdfd;
+  --foreground: #0b112d; /* Navy */
+  --card: #ffffff;
+  --card-border: rgba(11, 17, 45, 0.08);
+  --sidebar-bg: #0b112d; /* Dark Sidebar for Premium Look */
+  
+  --brand-primary: #3e8da8; /* Ocean Blue */
+  --brand-purple: #4d2a7a;  /* Deep Purple */
+  --brand-mint: #6ef3d6;    /* Mint Accent */
+  --brand-navy: #0b112d;
+
+  --brand-primary-hover: #2e6e85;
+  --brand-purple-hover: #381a5f;
+  --brand-mint-hover: #4ecaaf;
+  --brand-navy-hover: #262b3f;
+
+  --input-bg: #f8fafc;
+  --input-border: #e2e8f0;
+  --text-muted: #64748b;
+}
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-purple: var(--brand-purple);
+  --color-brand-mint: var(--brand-mint);
+  --color-brand-navy: var(--brand-navy);
+
+  --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-purple-hover: var(--brand-purple-hover);
+  --color-brand-mint-hover: var(--brand-mint-hover);
+  --color-brand-navy-hover: var(--brand-navy-hover);
+  
+  /* UI Semantic Colors */
+  --color-ui-bg: var(--background);
+  --color-ui-fg: var(--foreground);
+  --color-ui-card: var(--card);
+  --color-ui-border: var(--card-border);
+  --color-ui-sidebar: var(--sidebar-bg);
+  --color-ui-input: var(--input-bg);
+  --color-ui-input-border: var(--input-border);
+  --color-ui-muted: var(--text-muted);
+  
+  --shadow-brand: 0 4px 15px rgba(11, 17, 45, 0.1);
+}
+
+@layer components {
+  .glass {
+    @apply bg-ui-card border border-ui-border shadow-sm;
+  }
+
+  .sidebar-glass {
+    @apply bg-ui-sidebar border-r border-white/5;
+  }
+
+  .sidebar-item-active {
+    @apply bg-brand-primary text-white shadow-brand font-bold;
+  }
+
+  .btn-primary-custom {
+    @apply w-full cursor-pointer py-4 bg-brand-primary text-white rounded-2xl text-lg font-bold shadow-xl shadow-brand-primary/20 hover:bg-brand-purple transform transition-all active:scale-95;
+  }
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-ui-bg text-ui-fg min-h-screen text-base antialiased;
+  }
+
+  /* Global Form Elements Styling */
+  input:not([type="checkbox"]):not([type="radio"]):not(.no-style), 
+  select:not(.no-style), 
+  textarea:not(.no-style) {
+    @apply w-full px-5 py-4 bg-ui-input border border-ui-input-border rounded-2xl focus:ring-2 focus:ring-brand-primary focus:bg-white outline-none transition-all placeholder-ui-muted font-medium text-ui-fg shadow-sm;
+  }
+
+
+  input[type="checkbox"] {
+    @apply w-5 h-5 rounded-lg border-ui-input-border text-brand-primary focus:ring-brand-primary transition-all cursor-pointer;
+  }
+
+  /* Fix Lucide icons alignment */
+  .lucide {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+}
+

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Cadastro de Categoria{% endblock %}
+{% block header_title %}📁 Nova Categoria{% endblock %}
+{% block header_subtitle %}Defina um novo tipo de aula (Ex: Dança, Circo, Acrobático).{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl">
+    <form method="post" class="space-y-8">
+        {% csrf_token %}
+        
+        <div class="glass p-8 rounded-3xl border border-white/50 shadow-sm">
+            <h4 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                 Definição da Categoria
+            </h4>
+            <div class="space-y-4">
+                 <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Nome da Categoria</label>
+                    <input type="text" name="nome" required class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="Ex: Dança Contemporânea">
+                 </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <a href="{% url 'home' %}" class="px-8 py-4 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors">Cancelar</a>
+            <button type="submit" class="cursor-pointer px-10 py-4 bg-indigo-500 text-white rounded-2xl text-sm font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95">
+                Salvar Categoria
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

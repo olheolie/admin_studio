@@ -1,0 +1,13 @@
+Django>=5.0
+psycopg2-binary
+dj-database-url
+python-dotenv
+django-tailwind
+django-browser-reload
+whiteNoise
+django-widget-tweaks
+django-extensions
+django-debug-toolbar
+Pillow
+django-lucide
+# gunicorn

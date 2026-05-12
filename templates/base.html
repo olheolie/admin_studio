@@ -1,0 +1,163 @@
+{% load tailwind_tags %}
+{% load lucide %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Studio{% endblock %}</title>
+    {% tailwind_css %}
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="w-64 sidebar-glass h-screen sticky top-0 flex flex-col p-6 hidden md:flex text-white">
+        <div class="mb-10 flex items-center gap-3">
+            <div class="h-10 w-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-primary/20">
+                {% lucide "layout-dashboard" size=24 %}
+            </div>
+            <h1 class="text-xl font-bold tracking-tight bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Admin Studio
+            </h1>
+        </div>
+
+        <nav class="flex-1 space-y-2">
+            {% if user.role == 'ADMIN_ESCOLA' %}
+                <a href="{% url 'home' %}" class="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/10 {% if request.resolver_match.url_name == 'home' %}sidebar-item-active{% endif %}">
+                    {% lucide "home" size=18 %} Dashboard
+                </a>
+
+                <a href="{% url 'professor_lista' %}" class="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/10 {% if 'professor' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                    {% lucide "users" size=18 %} Professores
+                </a>
+                <a href="{% url 'aluno_lista' %}" class="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/10 {% if 'aluno' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                    {% lucide "graduation-cap" size=18 %} Alunos
+                </a>
+                <a href="{% url 'aulas_lista' %}" class="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/10 {% if request.resolver_match.url_name == 'aulas_lista' %}sidebar-item-active{% endif %}">
+                    {% lucide "calendar" size=18 %} Aulas
+                </a>
+                <a href="{% url 'cadastro_planos_pacotes' %}" class="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/10 {% if request.resolver_match.url_name == 'cadastro_planos_pacotes' %}sidebar-item-active{% endif %}">
+                    {% lucide "gem" size=18 %} Planos e Pacotes
+                </a>
+                <a href="{% url 'financeiro_geral' %}" class="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/10 {% if 'financeiro' in request.resolver_match.url_name %}sidebar-item-active{% endif %}">
+                    {% lucide "dollar-sign" size=18 %} Financeiro
+                </a>
+
+            {% elif user.role == 'ALUNO' %}
+                <a href="{% url 'aulas_lista' %}" class="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/10 {% if request.resolver_match.url_name == 'aulas_lista' %}sidebar-item-active{% endif %}">
+                    {% lucide "calendar" size=18 %} Aulas
+                </a>
+                <a href="#" class="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/10">
+                    {% lucide "file-text" size=18 %} Meu Plano
+                </a>
+            {% elif user.role == 'PROFESSOR' %}
+                <a href="{% url 'minhas_aulas' %}" class="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/10 {% if request.resolver_match.url_name == 'minhas_aulas' %}sidebar-item-active{% endif %}">
+                    {% lucide "book-open" size=18 %} Minhas Aulas
+                </a>
+                <a href="{% url 'aulas_lista' %}" class="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-white/10">
+                    {% lucide "calendar" size=18 %} Todas Aulas
+                </a>
+            {% endif %}
+        </nav>
+
+        <div class="mt-auto pt-6 border-t border-white/10">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-full bg-linear-to-br from-brand-primary to-brand-purple overflow-hidden flex items-center justify-center text-white">
+                    {{ user.username|first|upper }}
+                </div>
+                <div>
+                    <p class="text-sm font-semibold truncate w-32 text-white">{{ user.username }}</p>
+                    <p class="text-xs text-white/50">{{ user.get_role_display }}</p>
+                </div>
+            </div>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="w-full flex items-center justify-center gap-2 p-2 rounded-lg cursor-pointer bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors text-sm font-medium">
+                    {% lucide "log-out" size=16 %} Sair
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 overflow-y-auto">
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold flex items-center gap-2">{% block header_title %}Bem-vindo!{% endblock %}</h2>
+                <p class="text-ui-muted flex items-center gap-2">{% block header_subtitle %}Aqui está o que está acontecendo hoje.{% endblock %}</p>
+            </div>
+            <div class="flex gap-4">
+                {% block header_actions %}{% endblock %}
+            </div>
+        </header>
+
+        <!-- Django Messages -->
+        {% if messages %}
+            <div class="fixed top-6 right-6 z-[100] space-y-3 pointer-events-none">
+                {% for message in messages %}
+                    <div class="toast-message pointer-events-auto bg-white border border-gray-100 shadow-2xl rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-right duration-500 min-w-[300px]">
+                        <div class="h-10 w-10 rounded-xl flex items-center justify-center {% if message.tags == 'success' %}bg-green-100 text-green-600{% else %}bg-indigo-100 text-indigo-600{% endif %}">
+                            {% if message.tags == 'success' %}✓{% else %}ℹ{% endif %}
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Aviso do Sistema</p>
+                            <p class="text-sm font-bold text-gray-800">{{ message }}</p>
+                        </div>
+                        <button onclick="this.parentElement.remove()" class="ml-auto text-gray-300 hover:text-gray-500 transition-colors">✕</button>
+                    </div>
+                {% endfor %}
+            </div>
+            <script>
+                setTimeout(() => {
+                    document.querySelectorAll('.toast-message').forEach(m => {
+                        m.style.opacity = '0';
+                        m.style.transform = 'translateX(20px)';
+                        m.style.transition = 'all 0.5s ease';
+                        setTimeout(() => m.remove(), 500);
+                    });
+                }, 5000);
+            </script>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // Masks
+        const maskCpf = (value) => {
+            return value
+                .replace(/\D/g, '')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+                .replace(/(-\d{2})\d+?$/, '$1');
+        };
+
+        const maskPhone = (value) => {
+            return value
+                .replace(/\D/g, '')
+                .replace(/(\d{2})(\d)/, '($1) $2')
+                .replace(/(\d{5})(\d)/, '$1-$2')
+                .replace(/(-\d{4})\d+?$/, '$1');
+        };
+
+        const maskTime = (value) => {
+            return value
+                .replace(/\D/g, '')
+                .replace(/(\d{2})(\d)/, '$1:$2')
+                .slice(0, 5);
+        };
+
+        document.addEventListener('input', (e) => {
+            if (e.target.classList.contains('mask-cpf')) {
+                e.target.value = maskCpf(e.target.value);
+            } else if (e.target.classList.contains('mask-phone')) {
+                e.target.value = maskPhone(e.target.value);
+            } else if (e.target.classList.contains('mask-time')) {
+                e.target.value = maskTime(e.target.value);
+            }
+        });
+    </script>
+</body>
+</html>

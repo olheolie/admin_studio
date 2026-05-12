@@ -1,0 +1,413 @@
+{% extends 'base.html' %}
+{% load dict_filters lucide %}
+{% block title %}Aulas - Admin Studio{% endblock %}
+
+{% block header_title %}
+    {% if current_tab == 'lista' %}{% lucide "folder" size=20 %} Todas as Aulas{% else %}{% lucide "calendar" size=20 %} Grade da Semana{% endif %}
+
+{% endblock %}
+
+{% block header_subtitle %}
+    Gerencie e visualize os horários de aulas da escola.
+{% endblock %}
+
+{% block header_actions %}
+<div class="flex gap-2 bg-gray-100 p-1 rounded-xl">
+    <a href="?tab=calendario" class="px-4 py-2 rounded-lg text-sm font-bold transition-all {% if current_tab == 'calendario' %}bg-white shadow-sm text-indigo-500{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+        Calendário
+    </a>
+    <a href="?tab=lista" class="px-4 py-2 rounded-lg text-sm font-bold transition-all {% if current_tab == 'lista' %}bg-white shadow-sm text-indigo-500{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+        Aulas
+    </a>
+</div>
+{% if user.role == 'ADMIN_ESCOLA' %}
+    <a href="{% url 'cadastro_aula' %}" class="px-5 py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-100 flex items-center gap-2 hover:bg-indigo-600 transition-all active:scale-95">
+        {% lucide "plus" size=18 %} Nova Aula
+    </a>
+
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    
+    {% if current_tab == 'lista' %}
+        <!-- Tab: Lista de Aulas -->
+        <div class="glass p-6 rounded-3xl border border-white/50 mb-6">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="hidden" name="tab" value="lista">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Categoria</label>
+                    <select name="categoria" class="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 transition-all">
+                        <option value="">Todas as Categorias</option>
+                        {% for cat in categorias %}
+                            <option value="{{ cat.id }}" {% if request.GET.categoria == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Professor</label>
+                    <select name="professor" class="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 transition-all">
+                        <option value="">Todos os Professores</option>
+                        {% for prof in professores %}
+                            <option value="{{ prof.id }}" {% if request.GET.professor == prof.id|stringformat:"s" %}selected{% endif %}>{{ prof }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full py-3 bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">
+                        Filtrar Aulas
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for aula in aulas %}
+                <div class="glass p-6 rounded-3xl border border-white/50 hover:shadow-xl transition-all group">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-full uppercase tracking-wider">{{ aula.categoria.nome }}</span>
+                        <div class="flex items-center gap-2">
+                            {% if user.role == 'ADMIN_ESCOLA' %}
+                            <a href="{% url 'editar_aula' aula.id %}" class="p-1.5 text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-all" title="Editar Aula">
+                                {% lucide "edit" size=16 %}
+                            </a>
+                            {% endif %}
+                            <div class="h-8 w-8 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
+                                {% lucide "folder" size=16 %}
+                            </div>
+
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1 uppercase tracking-tight">{{ aula.nome|default:aula.categoria.nome }}</h3>
+                    <p class="text-sm text-gray-500 mb-4 font-medium flex items-center gap-2">{% lucide "user" size=14 %} {{ aula.professor }}</p>
+
+                    
+                    <div class="space-y-2 mb-6">
+                        {% for dia, horários in aula.horarios_json.items %}
+                            <div class="flex items-center justify-between text-xs font-bold uppercase">
+                                <span class="text-gray-400">{{ dia|slice:":3" }}</span>
+                                <span class="text-indigo-500">{{ horários.0 }} - {{ horários.1 }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if user.role == 'ALUNO' %}
+                        {% if aula.categoria.id in allowed_categories %}
+                            <button class="w-full py-3 bg-indigo-50 text-indigo-600 rounded-2xl text-sm font-bold hover:bg-indigo-500 hover:text-white transition-all">
+                                Disponível no seu Plano
+                            </button>
+                        {% else %}
+                            <button disabled class="w-full py-3 bg-gray-100 text-gray-400 rounded-2xl text-sm font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                                {% lucide "lock" size=14 %} Bloqueado (Upgrade Necessário)
+                            </button>
+
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div class="col-span-full py-20 text-center glass rounded-3xl border border-dashed border-gray-300">
+                    <p class="text-gray-400 font-medium">Nenhuma aula encontrada com esses filtros.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <!-- Tab: Calendário Semanal -->
+        <div class="grid grid-cols-1 lg:grid-cols-6 gap-4">
+            {% for dia in dias_semana %}
+                <div class="space-y-4">
+                    <div class="p-4 rounded-2xl border transition-all text-center {% if dia.is_today %}bg-indigo-500 text-white  shadow-indigo-100 border-indigo-500{% else %}bg-white border-gray-100 text-gray-800 shadow-sm{% endif %}">
+                        <p class="text-[10px] font-bold uppercase tracking-widest {% if dia.is_today %}text-indigo-200{% else %}text-gray-400{% endif %}">{{ dia.name|slice:":3" }}</p>
+                        <p class="text-lg font-bold">{{ dia.label }}</p>
+                        <p class="text-[10px] font-medium opacity-60">{{ dia.date|date:"d/m" }}</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        {% with dia_aulas=calendar_data|get_item:dia.name %}
+                            {% for item in dia_aulas %}
+                                <button onclick="openClassModal('{{ item.aula.id }}', '{{ item.aula.categoria.nome|escapejs }}', '{{ item.horario|escapejs }}', '{{ item.date|date:'Y-m-d'|escapejs }}', '{{ item.students_count|escapejs }}', '{{ item.aula.vagas_max|escapejs }}', {{ item.is_override|yesno:'true,false'|escapejs }}, '{{ item.aula.categoria.id|escapejs }}')" 
+                                    class="w-full text-left glass p-4 rounded-2xl border border-white/50 hover:shadow-lg transition-all transform hover:scale-[1.02] cursor-pointer group">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <span class="text-[9px] font-bold uppercase tracking-tight px-2 py-0.5 rounded-full {% if item.is_override %}bg-orange-100 text-orange-600{% else %}bg-indigo-100 text-indigo-600{% endif %}">
+                                            {{ item.horario }}
+                                        </span>
+                                        {% if item.is_override %}
+                                            <span class="text-[9px] font-bold text-orange-500 flex items-center gap-1">{% lucide "alert-triangle" size=10 %} ALTERADO</span>
+                                        {% endif %}
+
+                                    </div>
+                                    <div class="flex justify-between items-start mb-1">
+                                        <h5 class="text-[11px] font-bold text-gray-800 truncate">{{ item.aula.nome|default:item.aula.categoria.nome }}</h5>
+                                        {% if user.role == 'ADMIN_ESCOLA' %}
+                                        <a href="{% url 'editar_aula' item.aula.id %}" class="text-gray-400 opacity-0 group-hover:opacity-100 transition-all hover:text-indigo-500 hover:scale-110" onclick="event.stopPropagation()">
+                                            {% lucide "edit" size=12 %}
+                                        </a>
+                                        {% endif %}
+
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex -space-x-1">
+                                            {% for i in "123"|make_list %}
+                                                <div class="w-4 h-4 rounded-full border border-white bg-gray-200 flex items-center justify-center text-[6px] font-bold text-gray-400">
+                                                    {{ forloop.counter }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <span class="text-[9px] font-bold text-gray-400">{{ item.students_count }}/{{ item.aula.vagas_max }}</span>
+                                    </div>
+                                </button>
+                            {% empty %}
+                                <div class="py-10 flex flex-col items-center justify-center opacity-20">
+                                    {% lucide "coffee" size=24 %}
+                                    <span class="text-[10px] font-bold uppercase mt-2">Folga</span>
+                                </div>
+
+                            {% endfor %}
+                        {% endwith %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Modal: Detalhes da Aula -->
+<div id="classModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div class="bg-indigo-500 p-8 text-white">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span id="modalCategoryBadge" class="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full mb-2 inline-block">CATEGORIA</span>
+                    <h2 id="modalTitle" class="text-3xl font-bold">Nome da Aula</h2>
+                </div>
+                <button onclick="closeClassModal()" class="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all cursor-pointer">
+                    {% lucide "x" size=20 %}
+                </button>
+
+            </div>
+            <div class="mt-6 flex gap-6 text-sm font-medium">
+                <div class="flex items-center gap-2">
+                    <span class="opacity-60">{% lucide "clock" size=14 %}</span> <span id="modalTime">19:00 - 20:00</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="opacity-60">{% lucide "calendar" size=14 %}</span> <span id="modalDate">26/04/2026</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="opacity-60">{% lucide "users" size=14 %}</span> <span id="modalOccupancy">0/20</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="p-8">
+            {% if user.role == 'ADMIN_ESCOLA' %}
+                <!-- Admin View -->
+                <div class="space-y-8">
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Alunos Confirmados</h4>
+                        <div id="modalStudentsList" class="space-y-2 max-h-48 overflow-y-auto pr-2">
+                            <!-- JS will populate -->
+                        </div>
+
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 pt-6 border-t border-gray-100">
+                        <div>
+                            <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-4">Adicionar Aluno</h4>
+                            <form id="adminReserveForm" method="post" action="">
+                                {% csrf_token %}
+                                <input type="hidden" name="data" id="adminReserveData">
+                                <select name="aluno_id" class="w-full bg-gray-50 border-none rounded-xl px-4 py-3 text-xs font-bold focus:ring-2 focus:ring-indigo-500 mb-3">
+                                    <option value="">Selecionar Aluno</option>
+                                    {% for aluno in alunos_lista %}
+                                        <option value="{{ aluno.id }}">{{ aluno }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="w-full py-3 bg-indigo-500 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-all">
+                                    Reservar Presença
+                                </button>
+                            </form>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-orange-500 uppercase tracking-widest mb-4">Alterações da Aula</h4>
+                            <form id="rescheduleForm" method="post" action="">
+                                {% csrf_token %}
+                                <input type="hidden" name="data_original" id="rescheduleDataOriginal">
+                                
+                                <div class="grid grid-cols-2 gap-2 mb-3">
+                                    <input type="date" name="nova_data" class="w-full bg-gray-50 border-none rounded-xl px-3 py-3 text-xs font-bold focus:ring-2 focus:ring-indigo-500" placeholder="Nova Data">
+                                    <input type="time" name="novo_horario" class="w-full bg-gray-50 border-none rounded-xl px-3 py-3 text-xs font-bold focus:ring-2 focus:ring-indigo-500" placeholder="Novo Horário">
+                                </div>
+
+                                <div class="mb-3">
+                                    <select name="professor_substituto" class="w-full bg-gray-50 border-none rounded-xl px-3 py-3 text-xs font-bold focus:ring-2 focus:ring-indigo-500">
+                                        <option value="">Professor Substituto (Opcional)</option>
+                                        {% for prof in professores %}
+                                            <option value="{{ prof.id }}">{{ prof.user.first_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-4 flex items-center gap-2">
+                                    <input type="checkbox" name="cancelada" id="canceladaCheck" class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500">
+                                    <label for="canceladaCheck" class="text-xs font-bold text-red-500 uppercase">Cancelar esta aula</label>
+                                </div>
+
+                                <button type="submit" class="w-full py-3 bg-orange-100 text-orange-600 rounded-xl text-xs font-bold hover:bg-orange-600 hover:text-white transition-all">
+                                    Aplicar Alterações
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% elif user.role == 'ALUNO' %}
+                <!-- Aluno View -->
+                <div id="alunoActionContainer" class="space-y-6">
+                    <div id="alunoAccessMessage" class="hidden p-4 bg-red-50 rounded-2xl text-red-600 text-xs font-bold border border-red-100 uppercase tracking-tight text-center">
+                        Você não tem acesso a esta categoria no seu plano atual.
+                    </div>
+                    
+                    <div id="alunoAvailableActions" class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
+                            <div>
+                                <p class="text-sm font-bold text-indigo-700">Vagas Disponíveis</p>
+                                <p class="text-xs text-indigo-500 font-medium">Garanta seu lugar agora mesmo.</p>
+                            </div>
+                            <span id="vagasRestantes" class="text-xl font-bold text-indigo-600">8</span>
+                        </div>
+
+                        <form id="alunoReserveForm" method="post" action="">
+                            {% csrf_token %}
+                            <input type="hidden" name="data" id="alunoReserveData">
+                            <button id="reserveButton" type="submit" class="w-full py-4 bg-indigo-500 text-white rounded-2xl text-lg font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+                                Agendar Presença
+                            </button>
+                            <button id="waitingListButton" type="submit" class="hidden w-full py-4 bg-orange-500 text-white rounded-2xl text-lg font-bold shadow-xl shadow-orange-100 hover:bg-orange-600 transition-all active:scale-95">
+                                Entrar na Fila de Espera
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-center text-gray-400 font-medium py-10">Consulte seu administrador para agendamentos.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    const allowedCategories = [{% for id in allowed_categories %}{{ id }},{% endfor %}];
+    const studentMapping = {
+        {% for dia, dia_aulas in calendar_data.items %}
+            {% for item in dia_aulas %}
+                "{{ item.aula.id }}_{{ item.date|date:'Y-m-d' }}": [
+                    {% for ag in item.students %}
+                        { "name": "{{ ag.aluno.user.get_full_name|default:ag.aluno.user.username }}", "id": "{{ ag.id }}" },
+                    {% endfor %}
+                ],
+
+            {% endfor %}
+        {% endfor %}
+    };
+
+    function openClassModal(id, title, time, date, count, max, isOverride, categoryId) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalTime').innerText = time;
+        document.getElementById('modalDate').innerText = date.split('-').reverse().join('/');
+        document.getElementById('modalOccupancy').innerText = `${count}/${max}`;
+        
+        // Admin Forms
+        const rescheduleForm = document.getElementById('rescheduleForm');
+        if (rescheduleForm) {
+            rescheduleForm.action = `/aulas/${id}/reagendar/`;
+            document.getElementById('rescheduleDataOriginal').value = date;
+        }
+        
+        const adminForm = document.getElementById('adminReserveForm');
+        if (adminForm) {
+            adminForm.action = `/aulas/${id}/admin-reservar/`;
+            document.getElementById('adminReserveData').value = date;
+            
+            // Populate students list
+            const list = document.getElementById('modalStudentsList');
+            list.innerHTML = '';
+            const students = studentMapping[`${id}_${date}`] || [];
+            if (students.length > 0) {
+                students.forEach(student => {
+                    list.innerHTML += `
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 group/student">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-[10px] font-bold">
+                                    ${student.name.charAt(0).toUpperCase()}
+                                </div>
+
+                                <span class="text-xs font-bold text-gray-700">${student.name}</span>
+                            </div>
+                            <form method="post" action="/agendamento/${student.id}/cancelar-admin/" onsubmit="return confirm('Deseja realmente cancelar esta reserva?')">
+                                {% csrf_token %}
+                                <button type="submit" class="p-2 text-gray-400 hover:text-red-500 transition-colors cursor-pointer" title="Cancelar Reserva">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                </button>
+                            </form>
+                        </div>`;
+                });
+            } else {
+                list.innerHTML = '<p class="text-center text-gray-300 text-[10px] py-4 uppercase font-bold tracking-widest">Nenhum aluno confirmado.</p>';
+            }
+
+        }
+
+        // Aluno Logic
+        const alunoContainer = document.getElementById('alunoActionContainer');
+        if (alunoContainer) {
+            const hasAccess = allowedCategories.includes(parseInt(categoryId));
+            const msg = document.getElementById('alunoAccessMessage');
+            const actions = document.getElementById('alunoAvailableActions');
+            const reserveBtn = document.getElementById('reserveButton');
+            const waitBtn = document.getElementById('waitingListButton');
+            const occupancy = document.getElementById('vagasRestantes');
+
+            if (!hasAccess) {
+                msg.classList.remove('hidden');
+                actions.classList.add('hidden');
+            } else {
+                msg.classList.add('hidden');
+                actions.classList.remove('hidden');
+                occupancy.innerText = max - count;
+                
+                if (parseInt(count) >= parseInt(max)) {
+                    reserveBtn.classList.add('hidden');
+                    waitBtn.classList.remove('hidden');
+                } else {
+                    reserveBtn.classList.remove('hidden');
+                    waitBtn.classList.add('hidden');
+                }
+                
+                document.getElementById('alunoReserveForm').action = `/aulas/${id}/reservar/`;
+                document.getElementById('alunoReserveData').value = date;
+            }
+        }
+
+        document.getElementById('classModal').classList.remove('hidden');
+    }
+
+    function closeClassModal() {
+        document.getElementById('classModal').classList.add('hidden');
+    }
+
+    // Close modal on escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeClassModal();
+    });
+</script>
+
+<style>
+    .glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Admin Studio</title>
+    {% tailwind_css %}
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 min-h-screen flex items-center justify-center p-6">
+
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden p-10 transform transition-all hover:scale-[1.01]">
+        <div class="mb-10 text-center">
+             <div class="h-14 w-14 bg-indigo-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-lg">
+                AS
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800">Admin Studio</h1>
+            <p class="text-gray-500 mt-2 font-medium">Faça login para gerenciar sua escola</p>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label for="id_username" class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Usuário</label>
+                <input type="text" name="username" id="id_username" required
+                    class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all placeholder-gray-400 font-medium text-gray-700"
+                    placeholder="Seu usuário">
+            </div>
+
+            <div>
+                <label for="id_password" class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Senha</label>
+                <input type="password" name="password" id="id_password" required
+                    class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all placeholder-gray-400 font-medium text-gray-700"
+                    placeholder="••••••••">
+            </div>
+
+            {% if form.errors %}
+                <div class="p-4 bg-red-50 rounded-xl text-red-600 text-xs font-bold border border-red-100 uppercase tracking-tight">
+                    Usuário ou senha incorretos. Verifique suas credenciais.
+                </div>
+            {% endif %}
+
+            <button type="submit" class="w-full cursor-pointer py-4 bg-indigo-500 text-white rounded-2xl text-lg font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transform transition-all active:scale-95">
+                Entrar no Sistema
+            </button>
+        </form>
+
+        <div class="mt-8 text-center">
+            <a href="#" class="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors">Esqueceu sua senha?</a>
+        </div>
+    </div>
+
+</body>
+</html>

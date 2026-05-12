@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load lucide %}
+{% block title %}Editar Plano - Admin Studio{% endblock %}
+
+{% block header_title %}{% lucide "edit-2" size=24 %} Editar Plano{% endblock %}
+{% block header_subtitle %}Altere as informações do plano {{ form.instance.nome }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="glass p-8 rounded-3xl shadow-xl">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Nome do Plano</label>
+                {{ form.nome }}
+                {% if form.nome.errors %}<p class="text-red-500 text-xs mt-1">{{ form.nome.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Categorias Inclusas</label>
+                <div class="grid grid-cols-2 gap-3 p-4 bg-ui-input rounded-2xl border border-ui-border">
+                    {{ form.categorias }}
+                </div>
+                {% if form.categorias.errors %}<p class="text-red-500 text-xs mt-1">{{ form.categorias.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Duração (Meses)</label>
+                    {{ form.duracao_meses }}
+                </div>
+                <div>
+                    <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Valor (R$)</label>
+                    {{ form.valor }}
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <a href="{% url 'cadastro_planos_pacotes' %}" class="flex-1 py-4 bg-gray-100 text-gray-600 rounded-2xl text-sm font-bold text-center hover:bg-gray-200 transition-all">
+                    Cancelar
+                </a>
+                <button type="submit" class="flex-[2] py-4 bg-brand-primary text-white rounded-2xl text-sm font-bold shadow-lg hover:shadow-brand-primary/20 transition-all active:scale-95">
+                    Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const catList = document.querySelector('ul#id_categorias');
+    if (catList) {
+        catList.classList.add('grid', 'grid-cols-2', 'gap-3');
+        catList.querySelectorAll('li').forEach(li => {
+            li.classList.add('flex', 'items-center', 'gap-2', 'text-sm', 'font-medium');
+        });
+    }
+</script>
+{% endblock %}

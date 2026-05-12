@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Minhas Aulas{% endblock %}
+{% block header_title %}👨‍🏫 Minhas Aulas{% endblock %}
+{% block header_subtitle %}Confira as aulas que você leciona nesta semana.{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for aula in aulas %}
+    <div class="glass p-8 rounded-3xl border border-white/50 shadow-sm hover:shadow-lg transition-all">
+        <div class="flex justify-between items-start mb-6">
+            <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1.5 rounded-full uppercase">{{ aula.categoria.nome }}</span>
+            <div class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">🕒</div>
+        </div>
+        
+        <h3 class="text-xl font-bold text-gray-800 mb-2 uppercase">{{ aula.categoria.nome }}</h3>
+        
+        <div class="space-y-3 mb-8">
+            <div class="flex items-center gap-3 text-sm text-gray-500 font-medium">
+                <span class="w-5 text-gray-400">📅</span>
+                {% for dia, times in aula.horarios_json.items %}
+                    <span class="capitalize">{{ dia }}</span>: {{ times.0 }} - {{ times.1 }} {% if not forloop.last %}|{% endif %}
+                {% endfor %}
+            </div>
+            <div class="flex items-center gap-3 text-sm text-gray-500 font-medium">
+                <span class="w-5 text-gray-400">👥</span>
+                {{ aula.vagas_max }} Alunos registrados
+            </div>
+        </div>
+
+        <button class="w-full cursor-pointer py-4 bg-gray-100 text-gray-700 rounded-2xl text-sm font-bold hover:bg-gray-200 transition-colors">
+            Gerar Chamada
+        </button>
+    </div>
+    {% empty %}
+    <div class="col-span-full py-20 text-center">
+        <p class="text-gray-400 font-medium italic">Você ainda não possui aulas atribuídas.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

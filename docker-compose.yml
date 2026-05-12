@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: admin_studio_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: admin_studio
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    container_name: admin_studio_app
+    volumes:
+      - .:/app
+      - /app/theme/static_src/node_modules
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_DB=admin_studio
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=db
+      - DATABASE_URL=postgres://user:password@db:5432/admin_studio
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - DEBUG=True
+    depends_on:
+      - db
+    # In development, use CMD to wait for db and run migrations
+    command: >
+      bash -c "python manage.py wait_for_db &&
+               python manage.py migrate &&
+               (cd theme/static_src && npm run dev &) &&
+               python manage.py runserver 0.0.0.0:8000"
+  pgadmin:
+      image: dpage/pgadmin4
+      environment:
+        - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+        - PGADMIN_DEFAULT_PASSWORD=admin
+      ports:
+        - "5050:80"
+      depends_on:
+        - db
+
+volumes:
+  postgres_data:

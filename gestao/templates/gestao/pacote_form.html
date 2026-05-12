@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load lucide %}
+{% block title %}Editar Pacote - Admin Studio{% endblock %}
+
+{% block header_title %}{% lucide "edit-2" size=24 %} Editar Pacote{% endblock %}
+{% block header_subtitle %}Altere as informações do pacote {{ form.instance.nome }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="glass p-8 rounded-3xl shadow-xl">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Nome do Pacote</label>
+                {{ form.nome }}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Qtd. de Aulas</label>
+                    {{ form.quantidade_aulas }}
+                </div>
+                <div>
+                    <label class="block text-sm font-bold opacity-80 mb-2 uppercase tracking-wide">Valor (R$)</label>
+                    {{ form.valor }}
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <a href="{% url 'cadastro_planos_pacotes' %}" class="flex-1 py-4 bg-gray-100 text-gray-600 rounded-2xl text-sm font-bold text-center hover:bg-gray-200 transition-all">
+                    Cancelar
+                </a>
+                <button type="submit" class="flex-[2] py-4 bg-brand-purple text-white rounded-2xl text-sm font-bold shadow-lg hover:shadow-brand-purple/20 transition-all active:scale-95">
+                    Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

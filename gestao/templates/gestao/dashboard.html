@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load lucide %}
+{% block title %}Dashboard - Admin Studio{% endblock %}
+{% block header_title %}{% lucide "home" size=24 %} Painel Administrativo{% endblock %}
+
+{% block header_subtitle %}Aqui estão as estatísticas da sua escola: {{ user.escola.nome }}{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'cadastro_categoria' %}" class="px-5 py-2.5 bg-brand-primary text-white rounded-xl text-sm font-bold shadow-sm flex items-center gap-2 hover:bg-brand-primary-hover transition-all active:scale-95 ">
+    {% lucide "folder" size=18 %} Categoria
+</a>
+<a href="{% url 'cadastro_aula' %}" class="px-5 py-2.5 bg-brand-purple text-white rounded-xl text-sm font-bold shadow-sm flex items-center gap-2 hover:bg-brand-purple-hover transition-all active:scale-95">
+    {% lucide "calendar" size=18 %} Nova Aula
+</a>
+<a href="{% url 'cadastro_aluno' %}" class="px-5 py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-lg  flex items-center gap-2 hover:bg-indigo-700 transition-all active:scale-95">
+    {% lucide "user-plus" size=18 %} Novo Aluno
+</a>
+
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+    <div class="glass p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-lg transition-all">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 text-xl font-bold">
+                {% lucide "users" size=24 %}
+            </div>
+            <div>
+                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Alunos Ativos</p>
+                 <h3 class="text-2xl font-bold text-gray-800">{{ alunos_ativos }}</h3>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="glass p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-lg transition-all">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 text-xl font-bold">
+                {% lucide "dollar-sign" size=24 %}
+            </div>
+            <div>
+                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Receita Estimada</p>
+                 <h3 class="text-2xl font-bold text-gray-800">R$ {{ receita_estimada|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="glass p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-lg transition-all">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-600 text-xl font-bold">
+                {% lucide "calendar" size=24 %}
+            </div>
+            <div>
+                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Aulas Hoje</p>
+                 <h3 class="text-2xl font-bold text-gray-800">{{ aulas_hoje }}</h3>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="glass p-6 rounded-3xl border border-white/50 shadow-sm hover:shadow-lg transition-all">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 text-xl font-bold">
+                {% lucide "alert-triangle" size=24 %}
+            </div>
+            <div>
+                 <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Vencendo Logo</p>
+                 <h3 class="text-2xl font-bold text-gray-800">{{ vencendo_logo }}</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+{% endblock %}

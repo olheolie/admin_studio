@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% block title %}Alunos - Admin Studio{% endblock %}
+
+{% block header_title %}
+    {% if current_tab == 'cadastro' %}
+        {% if form.instance.pk %}🎓 Perfil de {{ form.instance.user.first_name }}{% else %}🎓 Matricular Aluno{% endif %}
+    {% else %}
+        👥 Quadro de Alunos
+    {% endif %}
+{% endblock %}
+
+{% block header_subtitle %}
+    Gerencie as matrículas e o progresso dos seus alunos.
+{% endblock %}
+
+{% block header_actions %}
+<div class="flex gap-2 bg-gray-100 p-1 rounded-xl">
+    <a href="{% url 'aluno_lista' %}" class="px-4 py-2 rounded-lg text-sm font-bold transition-all {% if current_tab != 'cadastro' %}bg-white shadow-sm text-indigo-500{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+        Lista
+    </a>
+    <a href="{% url 'cadastro_aluno' %}" class="px-4 py-2 rounded-lg text-sm font-bold transition-all {% if current_tab == 'cadastro' %}bg-white shadow-sm text-indigo-500{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+        Matricular
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    {% if current_tab == 'cadastro' %}
+        <!-- Tab: Matrícula -->
+        <div class="max-w-4xl">
+            <form method="post" class="space-y-8">
+                {% csrf_token %}
+                
+                <div class="glass p-8 rounded-3xl border border-white/50 shadow-sm">
+                    <h4 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        <span class="p-2 bg-indigo-100 rounded-lg text-indigo-500">👤</span> Dados do Aluno
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Nome Completo</label>
+                            <input type="text" name="nome" required value="{{ form.nome.value|default:'' }}" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                            {% if form.nome.errors %}<p class="text-red-500 text-[10px] mt-1 font-bold">{{ form.nome.errors.0 }}</p>{% endif %}
+                         </div>
+                         {% if not form.instance.pk %}
+                         <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">E-mail</label>
+                            <input type="email" name="email" required value="{{ form.email.value|default:'' }}" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                            {% if form.email.errors %}<p class="text-red-500 text-[10px] mt-1 font-bold">{{ form.email.errors.0 }}</p>{% endif %}
+                         </div>
+                         {% endif %}
+                         <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Telefone</label>
+                            <input type="text" name="telefone" required value="{{ form.telefone.value|default:'' }}" class="mask-phone w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="(00) 0 0000-0000">
+                            {% if form.telefone.errors %}<p class="text-red-500 text-[10px] mt-1 font-bold">{{ form.telefone.errors.0 }}</p>{% endif %}
+                         </div>
+                         <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">CPF</label>
+                            <input type="text" name="cpf" required value="{{ form.cpf.value|default:'' }}" class="mask-cpf w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="000.000.000-00">
+                            {% if form.cpf.errors %}<p class="text-red-500 text-[10px] mt-1 font-bold">{{ form.cpf.errors.0 }}</p>{% endif %}
+                         </div>
+                         <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Data de Nascimento</label>
+                            <input type="date" name="data_nascimento" required value="{{ form.data_nascimento.value|date:'Y-m-d'|default:'' }}" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                            {% if form.data_nascimento.errors %}<p class="text-red-500 text-[10px] mt-1 font-bold">{{ form.data_nascimento.errors.0 }}</p>{% endif %}
+                         </div>
+                         {% if form.instance.pk %}
+                         <div class="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <input type="checkbox" name="ativo" id="id_ativo" {% if form.ativo.value %}checked{% endif %} class="w-5 h-5 text-indigo-500 rounded border-gray-300 focus:ring-indigo-500">
+                            <label for="id_ativo" class="text-sm font-bold text-gray-700">Aluno Ativo (Pode reservar aulas)</label>
+                         </div>
+                         {% endif %}
+                    </div>
+                </div>
+
+                <div class="glass p-8 rounded-3xl border border-white/50 shadow-sm">
+                    <h4 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        <span class="p-2 bg-brand-mint/20 rounded-lg text-brand-primary">💳</span> Plano e Contratação
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Selecione o Plano</label>
+                            <select name="plano" required class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                                <option value="">---</option>
+                                {% for plano in planos %}
+                                    <option value="{{ plano.id }}" {% if form.plano.value|stringformat:"s" == plano.id|stringformat:"s" %}selected{% endif %}>{{ plano.nome }} - R$ {{ plano.valor }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.plano.errors %}<p class="text-red-500 text-[10px] mt-1 font-bold">{{ form.plano.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Início das Aulas</label>
+                            <input type="date" name="data_inicio" required value="{{ form.data_inicio.value|date:'Y-m-d'|default:'' }}" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                            {% if form.data_inicio.errors %}<p class="text-red-500 text-[10px] mt-1 font-bold">{{ form.data_inicio.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Dia de Vencimento</label>
+                            <input type="number" name="dia_vencimento" min="1" max="31" required value="{{ form.dia_vencimento.value|default:'5' }}" class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                            {% if form.dia_vencimento.errors %}<p class="text-red-500 text-[10px] mt-1 font-bold">{{ form.dia_vencimento.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <a href="{% url 'aluno_lista' %}" class="px-8 py-4 text-sm font-bold text-gray-500 hover:text-gray-700 transition-colors">Cancelar</a>
+                    <button type="submit" class="cursor-pointer px-10 py-4 bg-indigo-500 text-white rounded-2xl text-sm font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+                        {% if form.instance.pk %}Salvar Alterações{% else %}Finalizar Matrícula{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    {% else %}
+        <!-- Tab: Lista -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for aluno in alunos %}
+                <div class="glass p-6 rounded-3xl border border-white/50 hover:shadow-xl transition-all group">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-4">
+                            <div class="h-14 w-14 {% if aluno.ativo %}bg-indigo-100 text-indigo-600{% else %}bg-gray-200 text-gray-400{% endif %} rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">
+                                {{ aluno.user.first_name|slice:":1"|default:"A" }}
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold {% if aluno.ativo %}text-gray-800{% else %}text-gray-400 line-through{% endif %}">{{ aluno.user.get_full_name|default:aluno.user.username }}</h3>
+                                <p class="text-xs text-gray-400 font-bold uppercase tracking-tight">{{ aluno.user.email }}</p>
+                            </div>
+                        </div>
+                        {% if not aluno.ativo %}
+                        <span class="px-2 py-1 bg-gray-100 text-gray-500 rounded-lg text-[10px] font-bold uppercase border border-gray-200">Inativo</span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-green-100 text-green-600 rounded-lg text-[10px] font-bold uppercase border border-green-200">Ativo</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="space-y-3 mb-6 text-sm">
+                        <div class="flex justify-between items-center p-2 bg-gray-50 rounded-xl">
+                            <span class="text-gray-400 font-medium">💎 Plano</span>
+                            <span class="font-bold text-indigo-600">
+                                {% with matricula=aluno.matricula_set.first %}
+                                    {{ matricula.plano.nome|default:"Sem Plano" }}
+                                {% endwith %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">📞 Telefone</span>
+                            <span class="font-bold text-gray-700">{{ aluno.user.telefone|default:"-" }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">📅 Vencimento</span>
+                            <span class="font-bold text-gray-700">Dia {{ aluno.matricula_set.first.dia_vencimento|default:"-" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <a href="{% url 'aluno_perfil' aluno.id %}" class="flex-1 py-3 bg-white border border-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all text-center block">
+                            Perfil
+                        </a>
+                        <a href="{% url 'aluno_financeiro' aluno.id %}" class="flex-1 py-3 bg-brand-mint/10 text-brand-primary rounded-xl text-xs font-bold hover:bg-brand-mint/20 transition-all text-center block">
+                            Financeiro
+                        </a>
+
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-span-full py-20 text-center glass rounded-3xl border border-dashed border-gray-300">
+                    <p class="text-gray-400 font-medium">Nenhum aluno matriculado nesta escola.</p>
+                    <a href="{% url 'cadastro_aluno' %}" class="text-indigo-500 font-bold mt-2 inline-block hover:underline">Matricular o primeiro</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
