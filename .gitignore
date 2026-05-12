@@ -48,3 +48,7 @@ theme/static_src/dist/
 
 # Docker
 .dockerignore
+
+# OS specific
+.DS_Store
+Thumbs.db
